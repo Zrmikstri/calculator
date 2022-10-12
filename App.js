@@ -1,17 +1,18 @@
 // https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
 
 import React, { useState } from 'react';
-import { Text, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 
 function evalEquation(equation) {
+	let result = '';
 	try {
-		return Function(`'use strict'; return (${equation})`)();
+		result = Function(`'use strict'; return (${equation})`)();
 	}
 	catch (error) {
 		alert(error.message + `\nPlease re-enter your equation`);
 	}
 	finally {
-		return '';
+		return result.toString();
 	}
 };
 
@@ -25,9 +26,10 @@ const Calculator = () => {
 
 				<View style={styles.row}>
 					<Text
-						style={{ flex: 1, boderColor: 'black', borderWidth: 2, }} accessibilityLabel='Insert your equation here'
+						style={{ flex: 1, boderColor: 'black', borderWidth: 2, padding: 15, fontSize: 20, fontWeight: 'bold', textAlign: 'right' }}
+						accessibilityLabel='Insert your equation here'
 					>
-						{text.length ? text : `Insert your equation here`}
+						{text}
 					</Text>
 				</View>
 
@@ -94,7 +96,7 @@ const Calculator = () => {
 				<View style={styles.row}>
 					<TouchableOpacity
 						style={styles.button}
-						onPress={() => setText(text.slice(0, -1))}
+						onPress={() => { setText(text.slice(0, -1)); }}
 					>
 						<Text style={styles.buttonText}>Del</Text>
 					</TouchableOpacity>
@@ -105,7 +107,7 @@ const Calculator = () => {
 
 					<TouchableOpacity
 						style={styles.equalButton}
-						onPress={() => setText(evalEquation(text))}
+						onPress={() => { setText(evalEquation(text)); }}
 					>
 						<Text style={styles.buttonText}>=</Text>
 					</TouchableOpacity>
