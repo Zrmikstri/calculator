@@ -1,22 +1,35 @@
+// https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+
 import React, { useState } from 'react';
 import { Text, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-
+function evalEquation(equation) {
+	try {
+		return Function(`'use strict'; return (${equation})`)();
+	}
+	catch (error) {
+		alert(error.message + `\nPlease re-enter your equation`);
+	}
+	finally {
+		return '';
+	}
+};
 
 const Calculator = () => {
 	const [text, setText] = useState('');
 	const onPress = (value) => setText(text + value);
 
 	return (
-		<View style={{ padding: 10 }}>
-			<TextInput
-				style={{ height: 40, boderColor: 'black', borderWidth: 2 }}
-				placeholder='Insert equation'
-				onChangeText={newText => setText(newText)}
-				defaultValue={text}
-			/>
-
+		<View style={styles.container}>
 			<View style={styles.col}>
+
+				<View style={styles.row}>
+					<Text
+						style={{ flex: 1, boderColor: 'black', borderWidth: 2, }} accessibilityLabel='Insert your equation here'
+					>
+						{text.length ? text : `Insert your equation here`}
+					</Text>
+				</View>
 
 				<View style={styles.row}>
 					<TouchableOpacity style={styles.button} onPress={() => onPress('1')}>
@@ -91,8 +104,8 @@ const Calculator = () => {
 					</TouchableOpacity>
 
 					<TouchableOpacity
-						style={styles.button}
-						onPress={() => setText(eval(text))}
+						style={styles.equalButton}
+						onPress={() => setText(evalEquation(text))}
 					>
 						<Text style={styles.buttonText}>=</Text>
 					</TouchableOpacity>
@@ -104,20 +117,8 @@ const Calculator = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
 		padding: 10,
 		width: '25%',
-	},
-	button: {
-		width: 50,
-		height: 50,
-		alignItems: 'center',
-		backgroundColor: '#DDDDDD',
-		padding: 15,
-	},
-	buttonText: {
-		fontSize: 20,
-		fontWeight: 'bold',
 	},
 	row: {
 		flex: 1,
@@ -129,6 +130,22 @@ const styles = StyleSheet.create({
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 	},
+	button: {
+		flex: 1,
+		alignItems: 'center',
+		backgroundColor: '#DDDDDD',
+		padding: 15,
+	},
+	buttonText: {
+		fontSize: 20,
+		fontWeight: 'bold',
+	},
+	equalButton: {
+		flex: 2,
+		alignItems: 'center',
+		backgroundColor: '#DDDDDD',
+		padding: 15,
+	}
 });
 
 export default Calculator;
