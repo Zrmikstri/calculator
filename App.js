@@ -1,25 +1,37 @@
+// https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+
 import React, { useState } from 'react';
-import { Text, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 
-const evalInput = (input) => {
+function evalEquation(equation) {
+	let result = '';
+	try {
+		result = Function(`'use strict'; return (${equation})`)();
+	}
+	catch (error) {
+		alert(error.message + `\nPlease re-enter your equation`);
+	}
+	finally {
+		return result.toString();
+	}
+};
 
-}
-const test = ['1', '2', '3']
 const Calculator = () => {
 	const [text, setText] = useState('');
 	const onPress = (value) => setText(text + value);
 
 	return (
-		<View style={{ padding: 10 }}>
-			<TextInput
-				style={{ height: 40, boderColor: 'black', borderWidth: 2 }}
-				placeholder='Insert equation'
-				onChangeText={newText => setText(newText)}
-				defaultValue={text}
-			/>
-
-
+		<View style={styles.container}>
 			<View style={styles.col}>
+
+				<View style={styles.row}>
+					<Text
+						style={{ flex: 1, boderColor: 'black', borderWidth: 2, padding: 15, fontSize: 20, fontWeight: 'bold', textAlign: 'right' }}
+						accessibilityLabel='Insert your equation here'
+					>
+						{text}
+					</Text>
+				</View>
 
 				<View style={styles.row}>
 					<TouchableOpacity style={styles.button} onPress={() => onPress('1')}>
@@ -93,7 +105,7 @@ const Calculator = () => {
 				<View style={styles.row}>
 					<TouchableOpacity
 						style={styles.button}
-						onPress={() => setText(text.slice(0, -1))}
+						onPress={() => { setText(text.slice(0, -1)); }}
 					>
 						<Text style={styles.buttonText}>Del</Text>
 					</TouchableOpacity>
@@ -103,8 +115,8 @@ const Calculator = () => {
 					</TouchableOpacity>
 
 					<TouchableOpacity
-						style={styles.button}
-						onPress={() => setText(eval(text))}
+						style={styles.equalButton}
+						onPress={() => { setText(evalEquation(text)); }}
 					>
 						<Text style={styles.buttonText}>=</Text>
 					</TouchableOpacity>
@@ -116,24 +128,9 @@ const Calculator = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
 		padding: 10,
 		width: 200,
 
-	},
-	button: {
-		// width: 50,
-		// height: 50,
-		flex: 1,
-		alignItems: 'center',
-		backgroundColor: '#DDDDDD',
-		padding: 15,
-		borderWidth: 0.25,
-		borderColor: 'black'
-	},
-	buttonText: {
-		fontSize: 20,
-		fontWeight: 'bold',
 	},
 	row: {
 		flex: 1,
@@ -145,6 +142,22 @@ const styles = StyleSheet.create({
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 	},
+	button: {
+		flex: 1,
+		alignItems: 'center',
+		backgroundColor: '#DDDDDD',
+		padding: 15,
+	},
+	buttonText: {
+		fontSize: 20,
+		fontWeight: 'bold',
+	},
+	equalButton: {
+		flex: 2,
+		alignItems: 'center',
+		backgroundColor: '#DDDDDD',
+		padding: 15,
+	}
 });
 
 export default Calculator;
