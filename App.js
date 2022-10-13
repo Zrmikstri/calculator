@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Text, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
+const evalInput = (input) => {
 
-
+}
+const test = ['1', '2', '3']
 const Calculator = () => {
 	const [text, setText] = useState('');
 	const onPress = (value) => setText(text + value);
@@ -15,6 +17,7 @@ const Calculator = () => {
 				onChangeText={newText => setText(newText)}
 				defaultValue={text}
 			/>
+
 
 			<View style={styles.col}>
 
@@ -78,6 +81,15 @@ const Calculator = () => {
 					</TouchableOpacity>
 				</View>
 
+
+				{/* <View style={styles.row}>
+					{test.map(ele => (
+						<TouchableOpacity style={styles.button} onPress={() => onPress('(')}>
+							<Text style={styles.buttonText}>ele</Text>
+						</TouchableOpacity>))}
+				</View> */}
+
+
 				<View style={styles.row}>
 					<TouchableOpacity
 						style={styles.button}
@@ -106,14 +118,18 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		padding: 10,
-		width: '25%',
+		width: 200,
+
 	},
 	button: {
-		width: 50,
-		height: 50,
+		// width: 50,
+		// height: 50,
+		flex: 1,
 		alignItems: 'center',
 		backgroundColor: '#DDDDDD',
 		padding: 15,
+		borderWidth: 0.25,
+		borderColor: 'black'
 	},
 	buttonText: {
 		fontSize: 20,
@@ -125,7 +141,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'flex-start',
 	},
 	col: {
-		flex: 1,
+		width: 200,
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 	},
