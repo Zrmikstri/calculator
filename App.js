@@ -3,24 +3,43 @@
 import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 
-function evalEquation(equation) {
-	let result = equation;
+function evaluateExpression(expression) {
+	let result = expression;
 	try {
-		result = Function(`return (${equation})`)();
-		// result = eval(equation);
+		result = Function(`return (${expression})`)();
+		// result = eval(expression);
 	}
 	catch (error) {
-		alert(error.message + `\nPlease re-enter your equation`);
+		alert(error.message + `\nPlease re-enter your expression`);
 	}
 	finally {
 		return (Math.round(result * 100) / 100).toString();
 	}
 };
 
+function handlingButtonInput(expression, button, setResult) {
+	switch (button) {
+		case 'Del': {
+			return expression.slice(0, -1);
+		}
+		case 'C': {
+			return '';
+		}
+		case '=': {
+			setResult(evaluateExpression(expression));
+			return expression;
+		}
+		default: {
+			return expression + button;
+		}
+	}
+}
+
 const Calculator = () => {
 	const basicButtons = ['Del', 'C', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
+
 	const [expression, setExpression] = useState('');
-	// const [result, setResult] = useState('0');
+	const [result, setResult] = useState('0');
 
 	return (
 		<View style={styles.container}>
@@ -41,7 +60,9 @@ const Calculator = () => {
 						<TouchableOpacity
 							key={number}
 							style={styles.button}
-							onPress={() => setExpression(expression + number)}
+							onPress={() =>
+								setExpression(handlingButtonInput(expression, number, setResult))
+							}
 						>
 							<Text style={styles.buttonText}>{number}</Text>
 						</TouchableOpacity>
