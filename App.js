@@ -20,7 +20,7 @@ function evalEquation(equation) {
 const Calculator = () => {
 	const basicButtons = ['Del', 'C', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
 	const [expression, setExpression] = useState('');
-	const [result, setResult] = useState('0');
+	// const [result, setResult] = useState('0');
 
 	return (
 		<View style={styles.container}>
