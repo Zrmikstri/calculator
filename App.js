@@ -17,33 +17,66 @@ function evaluateExpression(expression) {
 	}
 };
 
-function handlingButtonInput(expression, button, setResult) {
-	switch (button) {
-		case 'Del': {
-			return expression.slice(0, -1);
-		}
-		case 'C': {
-			return '';
-		}
-		case '=': {
-			setResult(evaluateExpression(expression));
-			return expression;
-		}
-		default: {
-			return expression + button;
-		}
-	}
-}
+
 
 const Calculator = () => {
 	const basicButtons = ['Del', 'C', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
 
-	const [expression, setExpression] = useState('');
+	const [history, setHistory] = useState([]);
+	const [expression, setExpression] = useState('0');
 	const [result, setResult] = useState('0');
+
+	const evaluateExpression = (expression) => {
+		let result = expression;
+		try {
+			result = Function(`return (${expression})`)();
+			// result = eval(expression);
+		}
+		catch (error) {
+			alert(error.message + `\nPlease re-enter your expression`);
+		}
+		finally {
+			return (Math.round(result * 100) / 100).toString();
+		}
+	};
+
+	const handleButtonPress = (button) => {
+		// Only show = when = is pressed
+		if (result[0] === '=') {
+			setResult(result.slice(1));
+		}
+
+		// Handle button presses
+		switch (button) {
+			case 'Del': {
+				setExpression(expression.slice(0, -1));
+				break;
+			}
+			case 'C': {
+				setExpression('');
+				break;
+			}
+			case '=': {
+				let temp = evaluateExpression(expression);
+
+				// Add to history
+				setHistory([...history, { expression: expression, result: temp }]);
+
+				setResult(`=${temp}`);
+				setExpression(temp);
+				break;
+			}
+			default: {
+				setExpression(expression + button);
+				break;
+			}
+		}
+	};
 
 	return (
 		<View style={styles.container}>
 
+			{/* main screen */}
 			<View style={styles.displayContainer}>
 				<Text style={styles.outputText}>
 					{expression}
@@ -56,16 +89,24 @@ const Calculator = () => {
 
 			<View style={styles.buttonContainer}>
 				{
-					basicButtons.map((number) => (
+					basicButtons.map((button) => (
 						<TouchableOpacity
-							key={number}
-							style={styles.button}
-							onPress={() =>
-								setExpression(handlingButtonInput(expression, number, setResult))
-							}
+							key={button}
+							style={button === '0' ? styles.zeroButton : styles.button}
+							onPress={() => handleButtonPress(button)}
 						>
-							<Text style={styles.buttonText}>{number}</Text>
+							<Text style={styles.buttonText}>{button}</Text>
 						</TouchableOpacity>
+					))
+				}
+			</View>
+
+			<View>
+				{
+					history.map((item, index) => (
+						<View key={index}>
+							<Text style={styles.historyText}>{item.expression} = {item.result}</Text>
+						</View>
 					))
 				}
 			</View>
@@ -96,15 +137,6 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 		textAlign: 'right'
 	},
-	row: {
-		flex: 1,
-		flexDirection: 'row',
-		justifyContent: 'flex-end',
-	},
-	col: {
-		flex: 1,
-		flexDirection: 'column',
-	},
 	button: {
 		width: '25%',
 		alignItems: 'center',
@@ -122,7 +154,27 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		backgroundColor: '#DDDDDD',
 		padding: 15,
-	}
+	},
+	historyContainer: {
+		flex: 1,
+		boderColor: 'black',
+		borderWidth: 2,
+		padding: 10,
+	},
+	historyText: {
+		flex: 1,
+		padding: 15,
+		fontSize: 20,
+		fontWeight: 'bold',
+		textAlign: 'right'
+	},
+	historyCell: {
+		flex: 1,
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		borderWidth: 2,
+	},
+
 });
 
 export default Calculator;
