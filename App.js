@@ -6,8 +6,8 @@ import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 function evalEquation(equation) {
 	let result = equation;
 	try {
-		// result = Function(`return (${equation})`)();
-		result = eval(equation);
+		result = Function(`return (${equation})`)();
+		// result = eval(equation);
 	}
 	catch (error) {
 		alert(error.message + `\nPlease re-enter your equation`);
@@ -18,31 +18,35 @@ function evalEquation(equation) {
 };
 
 const Calculator = () => {
-	const [text, setText] = useState('');
-	const onPress = (value) => setText(text + value);
+	const basicNumbers = [7, 8, 9, 4, 5, 6, 1, 2, 3, 0, '.'];
+
+	const [expression, setExpression] = useState('');
+	const [result, setResult] = useState('0');
+	const onPress = (value) => setExpression(expression + value);
 
 	return (
 		<View style={styles.container}>
+
+			<View style={styles.displayContainer}>
+				<Text style={styles.outputText}>
+					{expression}
+				</Text>
+
+				<Text style={styles.outputText}>
+					{result}
+				</Text>
+			</View>
+
 			<View style={styles.col}>
-
-				<View style={{ ...styles.row, }}>
-					<Text
-						style={styles.outputText}
-						accessibilityLabel='Insert your equation here'
-					>
-						{text}
-					</Text>
-				</View>
-
 				<View style={styles.row}>
 					<TouchableOpacity
 						style={styles.button}
-						onPress={() => { setText(text.slice(0, -1)); }}
+						onPress={() => { setExpression(expression.slice(0, -1)); }}
 					>
 						<Text style={styles.buttonText}>Del</Text>
 					</TouchableOpacity>
 
-					<TouchableOpacity style={styles.button} onPress={() => setText('')}>
+					<TouchableOpacity style={styles.button} onPress={() => setExpression('')}>
 						<Text style={styles.buttonText}>Clear</Text>
 					</TouchableOpacity>
 
@@ -97,36 +101,37 @@ const Calculator = () => {
 				</View>
 
 				<View style={styles.row}>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('0')}>
-						<Text style={styles.buttonText}>0</Text>
+					<TouchableOpacity style={styles.zeroButton} onPress={() => onPress('0')}>
+						<Text style={{ ...styles.buttonText }}>0</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={styles.button} onPress={() => onPress('.')}>
 						<Text style={styles.buttonText}>.</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
-						style={styles.equalButton}
-						onPress={() => { setText(evalEquation(text)); }}
+						style={styles.button}
+						onPress={() => { setResult(evalEquation(expression)); }}
 					>
 						<Text style={styles.buttonText}>=</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
-		</View>
+		</View >
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
+		flex: 1,
 		padding: 10,
 		justifyContent: 'center'
 	},
-	outputDisplay: {
-
-	},
-	outputText: {
+	displayContainer: {
 		flex: 1,
 		boderColor: 'black',
 		borderWidth: 2,
+	},
+	outputText: {
+		flex: 1,
 		padding: 15,
 		fontSize: 20,
 		fontWeight: 'bold',
@@ -135,16 +140,16 @@ const styles = StyleSheet.create({
 	row: {
 		flex: 1,
 		flexDirection: 'row',
-		justifyContent: 'flex-start',
+		justifyContent: 'flex-end',
 	},
 	col: {
-		width: '100%',
+		flex: 1,
 		flexDirection: 'column',
-		justifyContent: 'flex-start',
 	},
 	button: {
-		flex: 1,
+		width: '25%',
 		alignItems: 'center',
+		justifyContent: 'center',
 		backgroundColor: '#DDDDDD',
 		padding: 15,
 	},
@@ -152,9 +157,10 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: 'bold',
 	},
-	equalButton: {
-		flex: 2,
+	zeroButton: {
+		width: '50%',
 		alignItems: 'center',
+		justifyContent: 'center',
 		backgroundColor: '#DDDDDD',
 		padding: 15,
 	}
