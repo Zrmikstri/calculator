@@ -4,15 +4,16 @@ import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 
 function evalEquation(equation) {
-	let result = '';
+	let result = equation;
 	try {
-		result = Function(`'use strict'; return (${equation})`)();
+		// result = Function(`return (${equation})`)();
+		result = eval(equation);
 	}
 	catch (error) {
 		alert(error.message + `\nPlease re-enter your equation`);
 	}
 	finally {
-		return result.toString();
+		return (Math.round(result * 100) / 100).toString();
 	}
 };
 
@@ -24,9 +25,9 @@ const Calculator = () => {
 		<View style={styles.container}>
 			<View style={styles.col}>
 
-				<View style={styles.row}>
+				<View style={{ ...styles.row, }}>
 					<Text
-						style={{ flex: 1, boderColor: 'black', borderWidth: 2, padding: 15, fontSize: 20, fontWeight: 'bold', textAlign: 'right' }}
+						style={styles.outputText}
 						accessibilityLabel='Insert your equation here'
 					>
 						{text}
@@ -34,32 +35,19 @@ const Calculator = () => {
 				</View>
 
 				<View style={styles.row}>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('1')}>
-						<Text style={styles.buttonText}>1</Text>
+					<TouchableOpacity
+						style={styles.button}
+						onPress={() => { setText(text.slice(0, -1)); }}
+					>
+						<Text style={styles.buttonText}>Del</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('2')}>
-						<Text style={styles.buttonText}>2</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('3')}>
-						<Text style={styles.buttonText}>3</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('+')}>
-						<Text style={styles.buttonText}>+</Text>
-					</TouchableOpacity>
-				</View>
 
-				<View style={styles.row}>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('4')}>
-						<Text style={styles.buttonText}>4</Text>
+					<TouchableOpacity style={styles.button} onPress={() => setText('')}>
+						<Text style={styles.buttonText}>Clear</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('5')}>
-						<Text style={styles.buttonText}>5</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('6')}>
-						<Text style={styles.buttonText}>6</Text>
-					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('-')}>
-						<Text style={styles.buttonText}>-</Text>
+
+					<TouchableOpacity style={styles.button} onPress={() => onPress('/')}>
+						<Text style={styles.buttonText}>/</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -79,41 +67,42 @@ const Calculator = () => {
 				</View>
 
 				<View style={styles.row}>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('0')}>
-						<Text style={styles.buttonText}>0</Text>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('4')}>
+						<Text style={styles.buttonText}>4</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('(')}>
-						<Text style={styles.buttonText}>(</Text>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('5')}>
+						<Text style={styles.buttonText}>5</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress(')')}>
-						<Text style={styles.buttonText}>)</Text>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('6')}>
+						<Text style={styles.buttonText}>6</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={styles.button} onPress={() => onPress('/')}>
-						<Text style={styles.buttonText}>/</Text>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('-')}>
+						<Text style={styles.buttonText}>-</Text>
 					</TouchableOpacity>
 				</View>
 
-
-				{/* <View style={styles.row}>
-					{test.map(ele => (
-						<TouchableOpacity style={styles.button} onPress={() => onPress('(')}>
-							<Text style={styles.buttonText}>ele</Text>
-						</TouchableOpacity>))}
-				</View> */}
-
+				<View style={styles.row}>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('1')}>
+						<Text style={styles.buttonText}>1</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('2')}>
+						<Text style={styles.buttonText}>2</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('3')}>
+						<Text style={styles.buttonText}>3</Text>
+					</TouchableOpacity>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('+')}>
+						<Text style={styles.buttonText}>+</Text>
+					</TouchableOpacity>
+				</View>
 
 				<View style={styles.row}>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={() => { setText(text.slice(0, -1)); }}
-					>
-						<Text style={styles.buttonText}>Del</Text>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('0')}>
+						<Text style={styles.buttonText}>0</Text>
 					</TouchableOpacity>
-
-					<TouchableOpacity style={styles.button} onPress={() => setText('')}>
-						<Text style={styles.buttonText}>Clear</Text>
+					<TouchableOpacity style={styles.button} onPress={() => onPress('.')}>
+						<Text style={styles.buttonText}>.</Text>
 					</TouchableOpacity>
-
 					<TouchableOpacity
 						style={styles.equalButton}
 						onPress={() => { setText(evalEquation(text)); }}
@@ -129,8 +118,19 @@ const Calculator = () => {
 const styles = StyleSheet.create({
 	container: {
 		padding: 10,
-		width: 200,
+		justifyContent: 'center'
+	},
+	outputDisplay: {
 
+	},
+	outputText: {
+		flex: 1,
+		boderColor: 'black',
+		borderWidth: 2,
+		padding: 15,
+		fontSize: 20,
+		fontWeight: 'bold',
+		textAlign: 'right'
 	},
 	row: {
 		flex: 1,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'flex-start',
 	},
 	col: {
-		width: 200,
+		width: '100%',
 		flexDirection: 'column',
 		justifyContent: 'flex-start',
 	},
