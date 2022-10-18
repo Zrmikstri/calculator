@@ -1,42 +1,35 @@
 // https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
 
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
 
-function evaluateExpression(expression) {
-	let result = expression;
-	try {
-		result = Function(`return (${expression})`)();
-		// result = eval(expression);
-	}
-	catch (error) {
-		alert(error.message + `\nPlease re-enter your expression`);
-	}
-	finally {
-		return (Math.round(result * 100) / 100).toString();
-	}
-};
-
-
+const HistoryItem = ({ itemExpression, itemResult }) => (
+	<View style={styles.historyCell}>
+		<Text style={styles.historyText}>{itemExpression}</Text>
+		<Text style={styles.historyText}>= {itemResult}</Text>
+	</View>
+);
 
 const Calculator = () => {
 	const basicButtons = ['Del', 'C', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
 
-	const [history, setHistory] = useState([]);
-	const [expression, setExpression] = useState('0');
+	const [expression, setExpression] = useState('');
 	const [result, setResult] = useState('0');
 
-	const evaluateExpression = (expression) => {
-		let result = expression;
+	const [history, setHistory] = useState([]);
+	const [showHistory, setShowHistory] = useState(false);
+	const [historyId, setHistoryId] = useState(null);
+
+	const evaluateExpression = () => {
+		let evaluationResult;
+
 		try {
-			result = Function(`return (${expression})`)();
-			// result = eval(expression);
+			evaluationResult = Function(`return (${expression})`)();
+			return (Math.round(evaluationResult * 100) / 100).toString();
 		}
 		catch (error) {
 			alert(error.message + `\nPlease re-enter your expression`);
-		}
-		finally {
-			return (Math.round(result * 100) / 100).toString();
+			throw error;
 		}
 	};
 
@@ -50,20 +43,29 @@ const Calculator = () => {
 		switch (button) {
 			case 'Del': {
 				setExpression(expression.slice(0, -1));
+				setResult('0');
 				break;
 			}
 			case 'C': {
 				setExpression('');
+				setResult('0');
 				break;
 			}
 			case '=': {
-				let temp = evaluateExpression(expression);
+				try {
+					const evaluationResult = evaluateExpression();
 
-				// Add to history
-				setHistory([...history, { expression: expression, result: temp }]);
+					// Add to history
+					setHistory([...history, { expression: expression, result: evaluationResult }]);
 
-				setResult(`=${temp}`);
-				setExpression(temp);
+					// Update result and expression
+					setResult(`=${evaluationResult}`);
+					setExpression(evaluationResult);
+				}
+				catch (error) {
+					setExpression(expression);
+					setResult('ERROR');
+				}
 				break;
 			}
 			default: {
@@ -72,6 +74,11 @@ const Calculator = () => {
 			}
 		}
 	};
+
+	const renderHistoryItem = ({ item }) => (
+		< HistoryItem itemExpression={item.expression} itemResult={item.result} />
+	);
+
 
 	return (
 		<View style={styles.container}>
@@ -101,15 +108,37 @@ const Calculator = () => {
 				}
 			</View>
 
-			<View>
-				{
-					history.map((item, index) => (
-						<View key={index}>
-							<Text style={styles.historyText}>{item.expression} = {item.result}</Text>
-						</View>
-					))
-				}
-			</View>
+			<TouchableOpacity
+				style={styles.button}
+				onPress={() => setShowHistory(!showHistory)}
+			>
+				<Text style={styles.buttonText}>History</Text>
+			</TouchableOpacity>
+
+			<Modal
+				animationType="slide"
+				visible={showHistory}
+				onRequestClose={() => {
+					setShowHistory(!showHistory);
+				}}
+			>
+				<TouchableOpacity
+					style={styles.button}
+					onPress={() => setShowHistory(!showHistory)}
+				>
+					<Text style={styles.buttonText}>History</Text>
+				</TouchableOpacity>
+
+				<FlatList
+					style={styles.historyContainer}
+					data={history}
+					renderItem={({ item }) => (
+						< HistoryItem itemExpression={item.expression} itemResult={item.result} />
+					)}
+					extraData={historyId}
+				/>
+			</Modal>
+
 		</View >
 	);
 };
@@ -156,7 +185,7 @@ const styles = StyleSheet.create({
 		padding: 15,
 	},
 	historyContainer: {
-		flex: 1,
+		flex: 2,
 		boderColor: 'black',
 		borderWidth: 2,
 		padding: 10,
@@ -170,9 +199,9 @@ const styles = StyleSheet.create({
 	},
 	historyCell: {
 		flex: 1,
-		flexDirection: 'row',
-		flexWrap: 'wrap',
+		flexDirection: 'column',
 		borderWidth: 2,
+		margin: 1
 	},
 
 });
