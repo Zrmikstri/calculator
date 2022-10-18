@@ -1,7 +1,20 @@
 // https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
 
 import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Modal, FlatList, TextInput } from 'react-native';
+
+function findInHIstory(query) {
+	function tokenize(input) {
+		return input.split(' ');
+	}
+
+	function match(query, expression, result) {
+		const tokens = tokenize(query);
+		return tokens.some(token => expression.includes(token) || result.includes(token));
+	}
+
+	return history.filter(item => item.expression.includes(query) || item.result.includes(query) || match(query, item.expression, item.result));
+}
 
 const HistoryItem = ({ itemExpression, itemResult }) => (
 	<View style={styles.historyCell}>
@@ -122,12 +135,27 @@ const Calculator = () => {
 					setShowHistory(!showHistory);
 				}}
 			>
-				<TouchableOpacity
-					style={styles.button}
-					onPress={() => setShowHistory(!showHistory)}
+				<View
+					style={{
+						flexDirection: 'row',
+						justifyContent: 'space-between',
+						alignItems: 'center',
+						padding: 10
+					}}
 				>
-					<Text style={styles.buttonText}>History</Text>
-				</TouchableOpacity>
+					<TouchableOpacity
+						style={styles.button}
+						onPress={() => setShowHistory(!showHistory)}
+					>
+						<Text style={styles.buttonText}>History</Text>
+					</TouchableOpacity>
+
+					<TextInput
+						style={styles.searchBar}
+						keyboardType='numeric'
+					/>
+				</View>
+
 
 				<FlatList
 					style={styles.historyContainer}
@@ -202,6 +230,13 @@ const styles = StyleSheet.create({
 		flexDirection: 'column',
 		borderWidth: 2,
 		margin: 1
+	},
+	searchBar: {
+		flex: 4,
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		borderWidth: 2,
+		padding: 10,
 	},
 
 });
