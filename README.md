@@ -34,7 +34,8 @@ Run this calculator on web and mobile through docker
     5.2. To run this calculator on mobile (android)
     >   npm start
     
-    After, open ExpoGo on your mobile (your mobile and laptop have to connect same private wifi) and 
+    After, open ExpoGo on your mobile (your mobile and laptop have to connect same private wifi), enter URL
+    > exp://YourIPv4:19000
 
 
 
