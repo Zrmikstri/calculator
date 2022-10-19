@@ -1,6 +1,6 @@
 # Calculator using React Native
 
-First React Native project for CS526. 
+First React Native project for CS526 ( Group 2)
 
 Simple working calculator using React Native
 
@@ -16,7 +16,7 @@ Run this calculator on web and mobile through docker
 
 2. Open Docker Desktop 
 3. Run commands on terminal
-    > docker run -u $(id -u) -it --rm --name calculator -p 19000-19010:19000-19010 -v `pwd`:/current node:18-slim bash
+    > docker run -u $(id -u) -it --rm --name calculator -p 19000-19010:19000-19010 -v \`pwd`:/current node:18-slim bash
 
     > cd current/
 
