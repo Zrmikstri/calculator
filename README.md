@@ -1,6 +1,6 @@
 # Calculator using React Native
 
-First React Native project for CS526 ( Group 2)
+First React Native project for CS526. 
 
 Simple working calculator using React Native
 
@@ -25,16 +25,16 @@ Run this calculator on web and mobile through docker
 
 5. Run app      
     5.1. To run this calculator on web use commands
-    > export NODE_OPTIONS=--openssl-legacy-provider  
+    > export NODE_OPTIONS=--openssl-legacy-provider
+
     > npm run web
 
     After, open this link on browser **http://localhost:19006**
 
     5.2. To run this calculator on mobile (android)
-    >   npm start
-    >   a
+    >   npm run android
     
-    After, open ExpoGo on your mobile and ...
+    After, open ExpoGo on your mobile (your mobile and laptop have to connect same private wifi) and ...
 
 
 
