@@ -3,27 +3,33 @@
 import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, Modal, FlatList, TextInput } from 'react-native';
 
-
-const HistoryItem = ({ itemExpression, itemResult }) => (
-	<View style={styles.historyCell}>
+const HistoryItem = ({ itemExpression, itemResult, onPress }) => (
+	<TouchableOpacity
+		style={styles.historyCell}
+		onPress={onPress}
+	>
 		<Text style={styles.historyText}>{itemExpression}</Text>
 		<Text style={styles.historyText}>= {itemResult}</Text>
-	</View>
+	</TouchableOpacity>
 );
 
 const Calculator = () => {
 	const basicButtons = ['Del', 'C', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
 
+	// Expression and result states
 	const [expression, setExpression] = useState('');
 	const [result, setResult] = useState('0');
 
+	// History states
 	const [history, setHistory] = useState([]);
 	const [showHistory, setShowHistory] = useState(false);
-	const [historyId, setHistoryId] = useState(null);
+	const [selectedHistoryId, setSelectedHistoryId] = useState(null);
 
+	// Search states
 	const [query, setQuery] = useState('');
-	const [searchResult, setSearchResult] = useState([])
+	const [searchResult, setSearchResult] = useState([]);
 
+	// Calculate the expression entered by the user from the keypad
 	const evaluateExpression = () => {
 		let evaluationResult;
 
@@ -37,6 +43,7 @@ const Calculator = () => {
 		}
 	};
 
+	// Handle the button press event from the keypad
 	const handleButtonPress = (button) => {
 		// Only show = when = is pressed
 		if (result[0] === '=') {
@@ -79,26 +86,48 @@ const Calculator = () => {
 		}
 	};
 
+	// Handle the history item press to update expression and result event
 	const renderHistoryItem = ({ item }) => (
-		< HistoryItem itemExpression={item.expression} itemResult={item.result} />
+		< HistoryItem
+			itemExpression={item.expression}
+			itemResult={item.result}
+			onPress={() => {
+				// Clear the query so the search result is not shown, instead the history is shown
+				setQuery('');
+
+				// Update the expression and result to the selected history item
+				setExpression(item.expression);
+				setResult(`=${item.result}`);
+
+				// Close the history modal
+				setShowHistory(false);
+
+
+				setSelectedHistoryId(item.expression);
+			}}
+		/>
 	);
 
+	// Handle the search expression and result with the query entered by the user
 	const findInHIstory = (query) => {
 		{
+			// We split the query into token incase the user want to simultaneously search for multiple number or operator in the history
 			function tokenize(input) {
 				return input.split(' ');
 			}
 
+			// We check if every single token is a substring of the expression or result in the history
 			function match(query, expression, result) {
 				const tokens = tokenize(query);
 				return tokens.some(token => expression.includes(token) || result.includes(token));
 			}
 
+			// We filter the history to only show the expression and result that match the query and update the search result
 			setSearchResult(history.filter(item => item.expression.includes(query) || item.result.includes(query) || match(query, item.expression, item.result)));
 		}
 
 
-	}
+	};
 
 
 	return (
@@ -116,6 +145,7 @@ const Calculator = () => {
 				</Text>
 			</View>
 
+			{/* keypad */}
 			<View style={styles.buttonContainer}>
 				{
 					basicButtons.map((button) => (
@@ -130,6 +160,7 @@ const Calculator = () => {
 				}
 			</View>
 
+			{/* history button */}
 			<TouchableOpacity
 				style={styles.button}
 				onPress={() => setShowHistory(!showHistory)}
@@ -137,6 +168,7 @@ const Calculator = () => {
 				<Text style={styles.buttonText}>History</Text>
 			</TouchableOpacity>
 
+			{/* history screen */}
 			<Modal
 				animationType="slide"
 				visible={showHistory}
@@ -156,12 +188,13 @@ const Calculator = () => {
 						style={styles.button}
 						onPress={() => {
 							setQuery('');
-							setShowHistory(!showHistory)
+							setShowHistory(!showHistory);
 						}}
 					>
 						<Text style={styles.buttonText}>History</Text>
 					</TouchableOpacity>
 
+					{/* Need to test on phone device for keyboard type */}
 					<TextInput
 						style={styles.searchBar}
 						keyboardType='numeric'
@@ -170,7 +203,7 @@ const Calculator = () => {
 						onChangeText={
 							(newQuery) => {
 								setQuery(newQuery);
-								findInHIstory(newQuery)
+								findInHIstory(newQuery);
 							}
 						}
 					/>
@@ -178,10 +211,10 @@ const Calculator = () => {
 
 
 				<FlatList
-
 					style={styles.historyContainer}
 					data={query.length ? searchResult : history}
 					renderItem={renderHistoryItem}
+					extraData={selectedHistoryId}
 				/>
 			</Modal>
 
