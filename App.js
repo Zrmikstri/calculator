@@ -3,18 +3,6 @@
 import React, { useState } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, Modal, FlatList, TextInput } from 'react-native';
 
-function findInHIstory(query) {
-	function tokenize(input) {
-		return input.split(' ');
-	}
-
-	function match(query, expression, result) {
-		const tokens = tokenize(query);
-		return tokens.some(token => expression.includes(token) || result.includes(token));
-	}
-
-	return history.filter(item => item.expression.includes(query) || item.result.includes(query) || match(query, item.expression, item.result));
-}
 
 const HistoryItem = ({ itemExpression, itemResult }) => (
 	<View style={styles.historyCell}>
@@ -32,6 +20,9 @@ const Calculator = () => {
 	const [history, setHistory] = useState([]);
 	const [showHistory, setShowHistory] = useState(false);
 	const [historyId, setHistoryId] = useState(null);
+
+	const [query, setQuery] = useState('');
+	const [searchResult, setSearchResult] = useState([])
 
 	const evaluateExpression = () => {
 		let evaluationResult;
@@ -92,12 +83,30 @@ const Calculator = () => {
 		< HistoryItem itemExpression={item.expression} itemResult={item.result} />
 	);
 
+	const findInHIstory = (query) => {
+		{
+			function tokenize(input) {
+				return input.split(' ');
+			}
+
+			function match(query, expression, result) {
+				const tokens = tokenize(query);
+				return tokens.some(token => expression.includes(token) || result.includes(token));
+			}
+
+			setSearchResult(history.filter(item => item.expression.includes(query) || item.result.includes(query) || match(query, item.expression, item.result)));
+		}
+
+
+	}
+
 
 	return (
 		<View style={styles.container}>
 
 			{/* main screen */}
 			<View style={styles.displayContainer}>
+
 				<Text style={styles.outputText}>
 					{expression}
 				</Text>
@@ -145,7 +154,10 @@ const Calculator = () => {
 				>
 					<TouchableOpacity
 						style={styles.button}
-						onPress={() => setShowHistory(!showHistory)}
+						onPress={() => {
+							setQuery('');
+							setShowHistory(!showHistory)
+						}}
 					>
 						<Text style={styles.buttonText}>History</Text>
 					</TouchableOpacity>
@@ -153,17 +165,23 @@ const Calculator = () => {
 					<TextInput
 						style={styles.searchBar}
 						keyboardType='numeric'
+						placeholder='Insert your query'
+						defaultValue=''
+						onChangeText={
+							(newQuery) => {
+								setQuery(newQuery);
+								findInHIstory(newQuery)
+							}
+						}
 					/>
 				</View>
 
 
 				<FlatList
+
 					style={styles.historyContainer}
-					data={history}
-					renderItem={({ item }) => (
-						< HistoryItem itemExpression={item.expression} itemResult={item.result} />
-					)}
-					extraData={historyId}
+					data={query.length ? searchResult : history}
+					renderItem={renderHistoryItem}
 				/>
 			</Modal>
 
