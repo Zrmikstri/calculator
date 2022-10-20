@@ -1,4 +1,4 @@
-# Calculator using React Native by Lương Lý Công Thịnh
+# Calculator using React Native by llct2103
 
 
 
