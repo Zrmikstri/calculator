@@ -1,295 +1,300 @@
-// https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+import { StyleSheet, Text, View, Pressable, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Modal } from 'react-native-web';
 
-import React, { useState } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet, Modal, FlatList, TextInput } from 'react-native';
-
-const HistoryItem = ({ itemExpression, itemResult, onPress }) => (
-	<TouchableOpacity
-		style={styles.historyCell}
-		onPress={onPress}
-	>
-		<Text style={styles.historyText}>{itemExpression}</Text>
-		<Text style={styles.historyText}>= {itemResult}</Text>
-	</TouchableOpacity>
+const KeyboardLayout = ({
+  values,
+  input, setInput,
+  output, setOutput,
+  outputText,setOutputText,
+  isContinuous, setIsContinuous,
+  isFirst, setIsFirst,
+  history, setHistory,
+  modalVisible, setModalVisible
+}) => (
+    <View style={styles.row}>
+      {values.map((value) => (
+        <TouchableOpacity
+          key={value}
+          onPress={() => {
+            if (value === '=') {
+              let result
+              if (isContinuous) {
+                  try {
+                      result = eval(input)
+                      result = (Math.round(result * 100) / 100).toString()
+                  }
+                  catch (e) {
+                      setOutput('Error')
+                  }
+                  finally {
+                      if (result === undefined)
+                          setOutput('Error')
+                      else
+                          setOutput(result)
+                      setIsContinuous(false)
+                  }
+              }
+              else {
+                  try {
+                      result = eval(input)
+                      result = (Math.round(result * 100) / 100).toString()
+                  }
+                  catch (e) {
+                      setOutput('Error')
+                  }
+                  finally {
+                      if (result === undefined)
+                          setOutput('Error')
+                      else
+                          setOutput(result)
+                      setIsFirst(true)
+                  }
+              }
+              setHistory([...history, { expression: outputText, result: '= '+ result}]);
+            }
+            else if (value === 'AC') {
+                setInput('')
+                setOutput('')
+                setOutputText('')
+            }
+            else if (value === 'DEL') {
+              setInput(input.slice(0,-1))
+              setOutputText(outputText.slice(0,-1))
+            }
+            else if (value === decodeURI('%CF%80')) {
+                setOutputText(outputText + decodeURI('%CF%80'))
+                setInput(input + '3.141592654')
+            }
+            else if (value === 'e') {
+              setOutputText(outputText + value)
+              setInput(input + '2.71828')
+            }
+            else if (value === '^') {
+                setOutputText(outputText + '^(')
+                setInput(input + `**(`)
+            }
+            else if (value === decodeURI('%E2%88%9A')) {
+                setOutputText(outputText + `${decodeURI('%E2%88%9A')}(`)
+                setInput(input + `Math.sqrt(`)
+            }
+            else if (value === '%') {
+              setOutputText(outputText + '%')
+              setInput(input + '/100')
+            }
+            else if (value === 'sin' | value === 'cos' | value === 'tan' | value === 'log') {
+              if (isContinuous) {
+                  setOutputText(outputText + `${value}(`)
+                  setInput(input + `Math.${value}(`)
+              }
+              else {
+                  if (isFirst) {
+                      setOutputText(output + `${value}(`)
+                      setInput(output + `Math.${value}(`)
+                      setIsFirst(false)
+                  }
+                  else {
+                      setOutputText(outputText + `${value}(`)
+                      setInput(input + `Math.${value}(`)
+                  }
+              }
+            }
+            else if (value == 'HISTORY') {
+              setModalVisible(!modalVisible)
+            }
+            else {
+              if (input[input.length - 1] === '+' || input[input.length - 1] === '-' || input[input.length - 1] === '*' || input[input.length - 1] ==='/') {
+                if (value === '+' || value === '-' || value === '*' || value ==='/'){
+                  setInput(input)
+                  setOutputText(outputText)
+                }
+                else{
+                  setInput(input + value)
+                  setOutputText(outputText + value)
+                }
+              }
+              else {
+                if (isContinuous) {
+                  setInput(input + value)
+                  setOutputText(outputText + value)
+                }
+                else {
+                  if (isFirst) {
+                      setInput(output + value)
+                      setOutputText(output + value)
+                      setOutput('')
+                      setIsFirst(false)
+                  }
+                  else {
+                      setInput(input + value)
+                      setOutputText(outputText + value)
+                  }
+                }
+              }
+            } 
+          }
+        }
+          style={[
+            styles.button,
+          ]}
+        >
+          <Text
+            style={[
+              styles.buttonLabel
+            ]}
+          >{value}
+          </Text>
+        </TouchableOpacity>
+      ))
+      }
+    </View>
 );
 
-const Calculator = () => {
-	const basicButtons = ['Del', 'C', '%', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0', '.', '='];
-
-	// Expression and result states
-	const [expression, setExpression] = useState('');
-	const [result, setResult] = useState('0');
-
-	// History states
-	const [history, setHistory] = useState([]);
-	const [showHistory, setShowHistory] = useState(false);
-	const [selectedHistoryId, setSelectedHistoryId] = useState(null);
-
-	// Search states
-	const [query, setQuery] = useState('');
-	const [searchResult, setSearchResult] = useState([]);
-
-	// Calculate the expression entered by the user from the keypad
-	const evaluateExpression = () => {
-		let evaluationResult;
-
-		try {
-			evaluationResult = Function(`return (${expression})`)();
-			return (Math.round(evaluationResult * 100) / 100).toString();
-		}
-		catch (error) {
-			alert(error.message + `\nPlease re-enter your expression`);
-			throw error;
-		}
-	};
-
-	// Handle the button press event from the keypad
-	const handleButtonPress = (button) => {
-		// Only show = when = is pressed
-		if (result[0] === '=') {
-			setResult(result.slice(1));
-		}
-
-		// Handle button presses
-		switch (button) {
-			case 'Del': {
-				setExpression(expression.slice(0, -1));
-				setResult('0');
-				break;
-			}
-			case 'C': {
-				setExpression('');
-				setResult('0');
-				break;
-			}
-			case '=': {
-				try {
-					const evaluationResult = evaluateExpression();
-
-					// Add to history
-					setHistory([...history, { expression: expression, result: evaluationResult }]);
-
-					// Update result and expression
-					setResult(`=${evaluationResult}`);
-					setExpression(evaluationResult);
-				}
-				catch (error) {
-					setExpression(expression);
-					setResult('ERROR');
-				}
-				break;
-			}
-			default: {
-				setExpression(expression + button);
-				break;
-			}
-		}
-	};
-
-	// Handle the history item press to update expression and result event
-	const renderHistoryItem = ({ item }) => (
-		< HistoryItem
-			itemExpression={item.expression}
-			itemResult={item.result}
-			onPress={() => {
-				// Clear the query so the search result is not shown, instead the history is shown
-				setQuery('');
-
-				// Update the expression and result to the selected history item
-				setExpression(item.expression);
-				setResult(`=${item.result}`);
-
-				// Close the history modal
-				setShowHistory(false);
-
-
-				setSelectedHistoryId(item.expression);
-			}}
-		/>
-	);
-
-	// Handle the search expression and result with the query entered by the user
-	const findInHIstory = (query) => {
-		{
-			// We split the query into token incase the user want to simultaneously search for multiple number or operator in the history
-			function tokenize(input) {
-				return input.split(' ');
-			}
-
-			// We check if every single token is a substring of the expression or result in the history
-			function match(query, expression, result) {
-				const tokens = tokenize(query);
-				return tokens.some(token => expression.includes(token) || result.includes(token));
-			}
-
-			// We filter the history to only show the expression and result that match the query and update the search result
-			setSearchResult(history.filter(item => item.expression.includes(query) || item.result.includes(query) || match(query, item.expression, item.result)));
-		}
-
-
-	};
-
-
-	return (
-		<View style={styles.container}>
-
-			{/* main screen */}
-			<View style={styles.displayContainer}>
-
-				<Text style={styles.outputText}>
-					{expression}
-				</Text>
-
-				<Text style={styles.outputText}>
-					{result}
-				</Text>
-			</View>
-
-			{/* keypad */}
-			<View style={styles.buttonContainer}>
-				{
-					basicButtons.map((button) => (
-						<TouchableOpacity
-							key={button}
-							style={button === '0' ? styles.zeroButton : styles.button}
-							onPress={() => handleButtonPress(button)}
-						>
-							<Text style={styles.buttonText}>{button}</Text>
-						</TouchableOpacity>
-					))
-				}
-			</View>
-
-			{/* history button */}
-			<TouchableOpacity
-				style={styles.button}
-				onPress={() => setShowHistory(!showHistory)}
-			>
-				<Text style={styles.buttonText}>History</Text>
-			</TouchableOpacity>
-
-			{/* history screen */}
-			<Modal
-				animationType="slide"
-				visible={showHistory}
-				onRequestClose={() => {
-					setShowHistory(!showHistory);
-				}}
-			>
-				<View
-					style={{
-						flexDirection: 'row',
-						justifyContent: 'space-between',
-						alignItems: 'center',
-						padding: 10
-					}}
-				>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={() => {
-							setQuery('');
-							setShowHistory(!showHistory);
-						}}
-					>
-						<Text style={styles.buttonText}>History</Text>
-					</TouchableOpacity>
-
-					{/* Need to test on phone device for keyboard type */}
-					<TextInput
-						style={styles.searchBar}
-						keyboardType='numeric'
-						placeholder='Insert your query'
-						defaultValue=''
-						onChangeText={
-							(newQuery) => {
-								setQuery(newQuery);
-								findInHIstory(newQuery);
-							}
-						}
-					/>
-				</View>
-
-
-				<FlatList
-					style={styles.historyContainer}
-					data={query.length ? searchResult : history}
-					renderItem={renderHistoryItem}
-					extraData={selectedHistoryId}
-				/>
-			</Modal>
-
-		</View >
-	);
-};
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		padding: 10,
-		justifyContent: 'center'
-	},
-	displayContainer: {
-		flex: 1,
-		boderColor: 'black',
-		borderWidth: 2,
-	},
-	buttonContainer: {
-		flex: 4,
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-	},
-	outputText: {
-		flex: 1,
-		padding: 15,
-		fontSize: 20,
-		fontWeight: 'bold',
-		textAlign: 'right'
-	},
-	button: {
-		width: '25%',
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#DDDDDD',
-		padding: 15,
-	},
-	buttonText: {
-		fontSize: 20,
-		fontWeight: 'bold',
-	},
-	zeroButton: {
-		width: '50%',
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#DDDDDD',
-		padding: 15,
-	},
-	historyContainer: {
-		flex: 2,
-		boderColor: 'black',
-		borderWidth: 2,
-		padding: 10,
-	},
-	historyText: {
-		flex: 1,
-		padding: 15,
-		fontSize: 20,
-		fontWeight: 'bold',
-		textAlign: 'right'
-	},
-	historyCell: {
+const HistoryItem = ({outputText, output}) => (
+  <View style = {{
 		flex: 1,
 		flexDirection: 'column',
 		borderWidth: 2,
-		margin: 1
-	},
-	searchBar: {
-		flex: 4,
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		borderWidth: 2,
-		padding: 10,
-	},
+		margin: 1,
+    borderColor: 'red',
+    borderWidth: 2,
+	}}>
+    <Text style={styles.output}>{outputText}</Text>
+    <Text style={styles.output}>{output}</Text>
+  </View> 
+);
 
+const App = () => {
+  const [outputText, setOutputText] = useState('')
+  const [output, setOutput] = useState('')
+  const [input, setInput] = useState('')
+  const [isContinuous, setIsContinuous] = useState(true)
+  const [isFirst, setIsFirst] = useState(true)
+  const [history, setHistory] = useState([])
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const renderHistoryItem = ({item}) => (
+    <HistoryItem
+      outputText={item.expression}
+      output={item.result}
+    />
+  );
+
+  return (
+    <View style={{flex: 1}}>
+      <View style={[styles.container, {flex: 1}]}>
+        <Text style={[styles.output, {flex: 1}]}>{outputText}</Text>
+        <Text style={[styles.output, {flex: 1}]}>{output}</Text>
+      </View>
+      <View style={[styles.container, {
+        flex: 3,
+        flexDirection: "column"
+      }]}>
+        <KeyboardLayout 
+          values = {['sin', 'cos', 'tan', 'log', decodeURI('%CF%80'), 'e', '(', ')', '^', decodeURI('%E2%88%9A'), '%', '!','7','8','9','*','4','5','6','-','1','2','3','+','0','.','DEL','=','AC', 'HISTORY']}
+          input ={input}
+          setInput={setInput}
+          output ={output}
+          setOutput = {setOutput}
+          outputText ={outputText}
+          setOutputText ={setOutputText}
+          isContinuous = {isContinuous}
+          setIsContinuous = {setIsContinuous}
+          isFirst = {isFirst}
+          setIsFirst = {setIsFirst}
+          history = {history}
+          setHistory = {setHistory}
+          modalVisible = {modalVisible}
+          setModalVisible = {setModalVisible}
+        />
+      </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+      >
+        <View style={[styles.container, {flex: 1}]}>
+          <TouchableOpacity
+            onPress ={()=>{
+              setModalVisible(!modalVisible)
+            }
+          }
+          style = {styles.box}
+          >
+            <Text
+            style={[
+              styles.buttonLabel
+            ]}
+          >Close
+          </Text>
+          </TouchableOpacity>
+          <FlatList
+            data={history}
+            renderItem={renderHistoryItem}
+          />
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 8,
+    marginLeft: 8,
+    marginRight: 8,
+    backgroundColor: "black",
+  },
+  box: {
+    justifyContent: 'center',
+    textAlign: "center",
+    backgroundColor: "oldlace",
+    width: 50,
+    height: 50,
+  },
+  row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  button: {
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 4,
+    justifyContent: 'center',
+    backgroundColor: "oldlace",
+    marginHorizontal: "1%",
+    minWidth: "21%", 
+    minHeight: "25%",
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  selected: {
+    backgroundColor: "coral",
+    borderWidth: 0,
+  },
+  buttonLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "coral",
+  },
+  selectedLabel: {
+    color: "white",
+  },
+  label: {
+    textAlign: "center",
+    marginBottom: 10,
+    fontSize: 24,
+  },
+  output: {
+    color: 'white',
+    textAlign: "right",
+    marginBottom: 10,
+    fontSize: 30,
+    marginTop: 5,
+    marginLeft: 5,
+    marginRight: 5,
+  },
 });
 
-export default Calculator;
+export default App;
